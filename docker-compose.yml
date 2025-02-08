@@ -1,4 +1,3 @@
-version: '3.9'
 services:
   stats-server:
     build: stats-service/stat-server
