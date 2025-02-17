@@ -34,6 +34,7 @@ public class RequestServiceImpl implements RequestService {
     private final EventRepository eventRepository;
 
     @Override
+    @Transactional
     public RequestDto createParticipationRequest(Long userId, Long eventId) {
         log.info("Добавление запроса от текущего пользователя на участие в мероприятии: user_id = " + userId + ", event_id = " + eventId);
         User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
@@ -69,6 +70,7 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
+    @Transactional
     public RequestDto cancelParticipationRequest(Long userId, Long requestId) {
         log.info("Отмена вашего запроса на участие в мероприятии: user_id = " + userId + ", request_id = " + requestId);
         userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));

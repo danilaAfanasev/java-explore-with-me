@@ -11,6 +11,7 @@ import ru.practicum.event.Event;
 import ru.practicum.event.EventRepository;
 import ru.practicum.exceptions.CategoryNotFoundException;
 import ru.practicum.exceptions.ForbiddenException;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -42,12 +43,14 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    @Transactional
     public CategoryDto createCategory(NewCategoryDto newCategoryDto) {
         log.info("Добавление новой категории: category name = " + newCategoryDto);
         return toCategoryDto(categoryRepository.save(toCategory(newCategoryDto)));
     }
 
     @Override
+    @Transactional
     public CategoryDto updateCategory(long catId, NewCategoryDto newCategoryDto) {
         log.info("Обновление категории: cat_id = " + catId + ", category name = " + newCategoryDto);
         Category existCategory = categoryRepository.findById(catId)
@@ -58,6 +61,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    @Transactional
     public void deleteCategory(long catId) {
         log.info("Удаление категории: cat_id = " + catId);
         categoryRepository.findById(catId)

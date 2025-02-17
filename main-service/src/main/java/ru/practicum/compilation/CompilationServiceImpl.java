@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.compilation.dto.CompilationDto;
 import ru.practicum.compilation.dto.CompilationMapper;
 import ru.practicum.compilation.dto.NewCompilationDto;
@@ -47,6 +48,7 @@ public class CompilationServiceImpl implements CompilationService {
     }
 
     @Override
+    @Transactional
     public CompilationDto createCompilation(NewCompilationDto newCompilationDto) {
         log.info("Добавление новой сборки: compilation = " + newCompilationDto);
         Compilation compilation = toCompilation(newCompilationDto);
@@ -57,6 +59,7 @@ public class CompilationServiceImpl implements CompilationService {
     }
 
     @Override
+    @Transactional
     public CompilationDto updateCompilation(Long compId, UpdateCompilationRequestDto updateCompilationRequestDto) {
         log.info("Обновление информации о сборке: comp_id = " + compId + ", update_compilation = " + updateCompilationRequestDto);
         Compilation compilation = compilationRepository.findById(compId).orElseThrow(() -> new CompilationNotFoundException(compId));
@@ -77,6 +80,7 @@ public class CompilationServiceImpl implements CompilationService {
     }
 
     @Override
+    @Transactional
     public void deleteCompilation(Long compId) {
         log.info("Удаление сборки: comp_id = " + compId);
         compilationRepository.findById(compId).orElseThrow(() -> new CompilationNotFoundException(compId));

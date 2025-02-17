@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.HitDto;
 import ru.practicum.StatClient;
 import ru.practicum.StatDto;
@@ -52,6 +53,7 @@ public class EventServiceImpl implements EventService {
     private final StatClient statClient;
 
     @Override
+    @Transactional
     public EventFullDto createEvent(Long userId, NewEventDto newEventDto) {
         log.info("Добавление нового события: user_id = " + userId + ", event = " + newEventDto);
         User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
@@ -97,6 +99,7 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    @Transactional
     public EventFullDto updateEventByUser(Long userId, Long eventId, UpdateEventUserRequestDto updateEventUserRequestDto) {
         log.info("Обновление информации события: user_id = " + userId + ", event_id = " + eventId +
                 ", update_event = " + updateEventUserRequestDto);
@@ -164,6 +167,7 @@ public class EventServiceImpl implements EventService {
 
 
     @Override
+    @Transactional
     public EventFullDto updateEventByAdmin(Long eventId, UpdateEventAdminRequestDto updateEventAdminRequestDto) {
         log.info("Обновление информации события администратором: event_id = " + eventId + ", update_event = " + updateEventAdminRequestDto);
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new EventNotFoundException(eventId));

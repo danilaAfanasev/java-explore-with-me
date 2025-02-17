@@ -1,14 +1,13 @@
 package ru.practicum.user.dto;
 
+import lombok.NoArgsConstructor;
 import ru.practicum.user.User;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@NoArgsConstructor
 public class UserMapper {
-
-    private UserMapper() {
-    }
 
     public static UserDto toUserDto(User user) {
         return UserDto.builder()

@@ -25,12 +25,13 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@Validated
 public class EventController {
     private final EventService eventService;
 
     @PostMapping("/users/{userId}/events")
     @ResponseStatus(HttpStatus.CREATED)
-    public EventFullDto createEvent(@PathVariable @Valid @Positive Long userId,
+    public EventFullDto createEvent(@PathVariable @Positive Long userId,
                                     @RequestBody @Validated NewEventDto newEventDto) {
         return eventService.createEvent(userId, newEventDto);
     }

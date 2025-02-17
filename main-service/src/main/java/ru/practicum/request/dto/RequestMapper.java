@@ -1,13 +1,12 @@
 package ru.practicum.request.dto;
 
+import lombok.NoArgsConstructor;
 import ru.practicum.request.Request;
 
 import java.time.format.DateTimeFormatter;
 
+@NoArgsConstructor
 public class RequestMapper {
-
-    private RequestMapper() {
-    }
 
     public static RequestDto toParticipationRequestDto(Request request) {
         return RequestDto.builder()

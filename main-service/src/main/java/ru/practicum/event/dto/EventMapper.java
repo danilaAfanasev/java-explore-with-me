@@ -1,5 +1,6 @@
 package ru.practicum.event.dto;
 
+import lombok.NoArgsConstructor;
 import ru.practicum.event.Event;
 import ru.practicum.request.Request;
 import ru.practicum.request.RequestStatus;
@@ -13,11 +14,9 @@ import static ru.practicum.location.dto.LocationMapper.toLocation;
 import static ru.practicum.location.dto.LocationMapper.toLocationDto;
 import static ru.practicum.user.dto.UserMapper.toUserShortDto;
 
+@NoArgsConstructor
 public class EventMapper {
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
-    private EventMapper() {
-    }
 
     public static Event toEvent(NewEventDto newEventDto) {
         return Event.builder()
