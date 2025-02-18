@@ -1,7 +1,6 @@
 package ru.practicum.event;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
@@ -37,21 +36,21 @@ public class EventController {
     }
 
     @GetMapping("/users/{userId}/events")
-    public List<EventShortDto> getEvents(@PathVariable @Valid @Positive Long userId,
+    public List<EventShortDto> getEvents(@PathVariable @Positive Long userId,
                                          @RequestParam(defaultValue = "0") @PositiveOrZero int from,
                                          @RequestParam(defaultValue = "10") @Positive int size) {
         return eventService.getEvents(userId, from, size);
     }
 
     @GetMapping("/users/{userId}/events/{eventId}")
-    public EventFullDto getEventById(@PathVariable @Valid @Positive Long userId,
-                                     @PathVariable @Valid @Positive Long eventId) {
+    public EventFullDto getEventById(@PathVariable @Positive Long userId,
+                                     @PathVariable @Positive Long eventId) {
         return eventService.getEventById(userId, eventId);
     }
 
     @PatchMapping("/users/{userId}/events/{eventId}")
-    public EventFullDto updateEventByUser(@PathVariable @Valid @Positive Long userId,
-                                          @PathVariable @Valid @Positive Long eventId,
+    public EventFullDto updateEventByUser(@PathVariable @Positive Long userId,
+                                          @PathVariable @Positive Long eventId,
                                           @RequestBody @Validated UpdateEventUserRequestDto updateEventUserRequestDto) {
         return eventService.updateEventByUser(userId, eventId, updateEventUserRequestDto);
     }
@@ -68,7 +67,7 @@ public class EventController {
     }
 
     @PatchMapping("/admin/events/{eventId}")
-    public EventFullDto updateEventByAdmin(@PathVariable @Valid @Positive Long eventId,
+    public EventFullDto updateEventByAdmin(@PathVariable @Positive Long eventId,
                                            @RequestBody @Validated UpdateEventAdminRequestDto updateEventAdminRequestDto) {
         return eventService.updateEventByAdmin(eventId, updateEventAdminRequestDto);
     }
@@ -89,7 +88,7 @@ public class EventController {
     }
 
     @GetMapping("/events/{id}")
-    public EventFullDto getPublishedEventById(@PathVariable @Valid @Positive Long id,
+    public EventFullDto getPublishedEventById(@PathVariable @Positive Long id,
                                               HttpServletRequest request) {
         return eventService.getPublishedEventById(id, request);
     }

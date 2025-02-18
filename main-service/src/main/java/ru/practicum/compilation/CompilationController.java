@@ -1,6 +1,5 @@
 package ru.practicum.compilation;
 
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -32,7 +31,7 @@ public class CompilationController {
     }
 
     @GetMapping("/compilations/{compId}")
-    public CompilationDto getCompilationById(@PathVariable @Valid @Positive Long compId) {
+    public CompilationDto getCompilationById(@PathVariable @Positive Long compId) {
         return compilationService.getCompilationById(compId);
     }
 
@@ -43,7 +42,7 @@ public class CompilationController {
     }
 
     @PatchMapping("/admin/compilations/{compId}")
-    public CompilationDto updateCompilation(@PathVariable @Valid @Positive Long compId,
+    public CompilationDto updateCompilation(@PathVariable @Positive Long compId,
                                             @RequestBody @Validated UpdateCompilationRequestDto updateCompilationRequestDto) {
         return compilationService.updateCompilation(compId, updateCompilationRequestDto);
     }
