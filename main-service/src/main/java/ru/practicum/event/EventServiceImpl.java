@@ -302,6 +302,7 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    @Transactional
     public EventFullDto getPublishedEventById(Long eventId, HttpServletRequest request) {
         log.info("Получение опубликованного события с ID: {}", eventId);
 
@@ -321,10 +322,17 @@ public class EventServiceImpl implements EventService {
             log.warn("StatClient недоступен, но продолжаем выполнение. Ошибка: {}", e.getMessage());
         }
 
+        // Гарантируем, что views не null перед обновлением
+        if (event.getViews() == null) {
+            event.setViews(0L);
+        }
+
+        // Обновляем views в БД
         eventRepository.incrementViews(event.getId());
 
         return toEventFullDto(event);
     }
+
 
 
     private void validateEventStates(List<String> states) {

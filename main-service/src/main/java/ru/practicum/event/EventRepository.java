@@ -1,5 +1,6 @@
 package ru.practicum.event;
 
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -45,6 +46,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 
     Optional<Event> findByIdAndState(Long eventId, EventState state);
 
+    @Transactional
     @Modifying
     @Query("UPDATE Event e SET e.views = e.views + 1 WHERE e.id = :eventId")
     void incrementViews(@Param("eventId") Long eventId);
