@@ -322,18 +322,15 @@ public class EventServiceImpl implements EventService {
             log.warn("StatClient недоступен, но продолжаем выполнение. Ошибка: {}", e.getMessage());
         }
 
-        // Гарантируем, что views не null перед обновлением
         if (event.getViews() == null) {
             event.setViews(0L);
         }
 
-        // Обновляем views в БД
         eventRepository.incrementViews(event.getId());
-
+        log.info("Обновлен views для события {}: новое значение {}", event.getId(), event.getViews());
+        
         return toEventFullDto(event);
     }
-
-
 
     private void validateEventStates(List<String> states) {
         if (states != null) {
