@@ -328,7 +328,6 @@ public class EventServiceImpl implements EventService {
 
         eventRepository.incrementViews(event.getId());
         log.info("Обновлен views для события {}: новое значение {}", event.getId(), event.getViews());
-        
         return toEventFullDto(event);
     }
 
