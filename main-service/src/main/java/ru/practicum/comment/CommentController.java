@@ -1,5 +1,6 @@
 package ru.practicum.comment;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@Validated
 public class CommentController {
     private final CommentService commentService;
 
@@ -27,7 +29,7 @@ public class CommentController {
     @ResponseStatus(HttpStatus.CREATED)
     public CommentResponseDto createComment(@PathVariable @Positive Long userId,
                                             @PathVariable @Positive Long eventId,
-                                            @RequestBody @Validated NewCommentDto newCommentDto) {
+                                            @RequestBody @Valid NewCommentDto newCommentDto) {
         return commentService.createComment(userId, eventId, newCommentDto);
     }
 
@@ -46,7 +48,7 @@ public class CommentController {
     @PatchMapping("/user/{userId}/comment/{commentId}")
     public CommentResponseDto updateComment(@PathVariable @Positive Long userId,
                                             @PathVariable @Positive Long commentId,
-                                            @RequestBody @Validated NewCommentDto newCommentDto) {
+                                            @RequestBody @Valid NewCommentDto newCommentDto) {
         return commentService.updateComment(userId, commentId, newCommentDto);
     }
 

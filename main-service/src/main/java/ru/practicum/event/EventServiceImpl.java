@@ -303,33 +303,29 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public EventFullDto getPublishedEventById(Long eventId, HttpServletRequest request) {
-        log.info("Получение об опубликованном событии с ID: event_id = " + eventId);
+        log.info("Получение опубликованного события с ID: {}", eventId);
 
         Event event = eventRepository.findByIdAndState(eventId, EventState.PUBLISHED)
                 .orElseThrow(() -> new EventNotFoundException(eventId));
 
-        log.info("Found event: " + event);
+        log.info("Событие найдено: {}", event);
 
         try {
-            Integer countHits = getCountHits(request);
             statClient.addHit(HitDto.builder()
                     .app("ewm-main-service")
                     .uri(request.getRequestURI())
                     .ip(request.getRemoteAddr())
                     .timestamp(LocalDateTime.now().format(formatter))
                     .build());
-            Integer newCountHits = getCountHits(request);
-            if (newCountHits != null && newCountHits > countHits) {
-                event.setViews(event.getViews() + 1);
-                eventRepository.save(event);
-            }
         } catch (Exception e) {
-            log.error("Ошибка при обновлении представлений событий или взаимодействии с statClient", e);
-            throw new RuntimeException("Internal server error", e);
+            log.warn("StatClient недоступен, но продолжаем выполнение. Ошибка: {}", e.getMessage());
         }
+
+        eventRepository.incrementViews(event.getId());
 
         return toEventFullDto(event);
     }
+
 
     private void validateEventStates(List<String> states) {
         if (states != null) {
