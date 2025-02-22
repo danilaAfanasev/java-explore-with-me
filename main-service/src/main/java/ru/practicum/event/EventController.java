@@ -37,8 +37,8 @@ public class EventController {
 
     @GetMapping("/users/{userId}/events")
     public List<EventShortDto> getEvents(@PathVariable @Positive Long userId,
-                                         @RequestParam(defaultValue = "0") @PositiveOrZero int from,
-                                         @RequestParam(defaultValue = "10") @Positive int size) {
+                                         @RequestParam(defaultValue = "0") int from,
+                                         @RequestParam(defaultValue = "10") int size) {
         return eventService.getEvents(userId, from, size);
     }
 
