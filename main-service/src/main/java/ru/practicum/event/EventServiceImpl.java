@@ -311,23 +311,36 @@ public class EventServiceImpl implements EventService {
 
         log.info("Событие найдено: {}", event);
 
+        String clientIp = request.getRemoteAddr();
+        log.info("IP клиента: {}", clientIp);
+
+        // Проверяем, увеличивался ли views в этом запросе
+        if (request.getSession().getAttribute("viewed_" + eventId) == null) {
+            log.info("Вызываем incrementViews() для события ID: {}", eventId);
+            eventRepository.incrementViews(eventId);
+
+            // Обновляем объект event из БД, чтобы получить новое значение views
+            event = eventRepository.findById(eventId).orElseThrow();
+            log.info("Обновлен views для события {}: {}", event.getId(), event.getViews());
+
+            // Помечаем, что для этого события уже было увеличение просмотров
+            request.getSession().setAttribute("viewed_" + eventId, true);
+        } else {
+            log.info("Просмотр уже засчитан в этом сеансе, повторное увеличение отменено.");
+        }
+
         try {
+            log.info("Вызываем StatClient.addHit() для события ID: {}", eventId);
             statClient.addHit(HitDto.builder()
                     .app("ewm-main-service")
                     .uri(request.getRequestURI())
-                    .ip(request.getRemoteAddr())
+                    .ip(clientIp)
                     .timestamp(LocalDateTime.now().format(formatter))
                     .build());
         } catch (Exception e) {
             log.warn("StatClient недоступен, но продолжаем выполнение. Ошибка: {}", e.getMessage());
         }
 
-        if (event.getViews() == null) {
-            event.setViews(0L);
-        }
-
-        eventRepository.incrementViews(event.getId());
-        log.info("Обновлен views для события {}: новое значение {}", event.getId(), event.getViews());
         return toEventFullDto(event);
     }
 
