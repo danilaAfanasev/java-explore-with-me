@@ -237,21 +237,24 @@ public class EventServiceImpl implements EventService {
     @Override
     public List<EventFullDto> getEventsByAdmin(List<Long> users, List<String> states, List<Long> categories,
                                                String rangeStart, String rangeEnd, int from, int size) {
-        log.info("Поиск событий по параметрам: user_ids = " + users + ", states = " + states + ", categories = " + categories +
-                ", rangeStart = " + rangeStart + ", rangeEnd = " + rangeEnd);
-        validateEventStates(states);
+        log.info("Поиск событий: users = {}, states = {}, categories = {}, rangeStart = {}, rangeEnd = {}",
+                users, states, categories, rangeStart, rangeEnd);
+
         int page = (size > 0) ? from / size : 0;
-        PageRequest pageable = PageRequest.of(page, Math.max(size, 1)); // Минимальный size = 1
+        PageRequest pageable = PageRequest.of(page, Math.max(size, 1));
 
-        List<Event> events = eventRepository.findEvents(users, states, categories,
-                rangeStart != null ? LocalDateTime.parse(rangeStart, formatter) : null,
-                rangeEnd != null ? LocalDateTime.parse(rangeEnd, formatter) : null,
-                pageable);
+        List<Long> userList = (users == null || users.isEmpty()) ? null : users;
+        List<String> stateList = (states == null || states.isEmpty()) ? null : states;
+        List<Long> categoryList = (categories == null || categories.isEmpty()) ? null : categories;
+        LocalDateTime startDate = (rangeStart == null || rangeStart.isEmpty())
+                ? null
+                : LocalDateTime.parse(rangeStart, formatter);
+        LocalDateTime endDate = (rangeEnd == null || rangeEnd.isEmpty())
+                ? null
+                : LocalDateTime.parse(rangeEnd, formatter);
 
-        return events
-                .stream()
-                .map(EventMapper::toEventFullDto)
-                .collect(Collectors.toList());
+        List<Event> events = eventRepository.findEvents(userList, stateList, categoryList, startDate, endDate, pageable);
+        return events.stream().map(EventMapper::toEventFullDto).collect(Collectors.toList());
     }
 
     @Override
