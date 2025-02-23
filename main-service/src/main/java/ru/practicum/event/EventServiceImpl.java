@@ -237,24 +237,22 @@ public class EventServiceImpl implements EventService {
     @Override
     public List<EventFullDto> getEventsByAdmin(List<Long> users, List<String> states, List<Long> categories,
                                                String rangeStart, String rangeEnd, int from, int size) {
-        log.info("Поиск событий по параметрам: user_ids = {}, states = {}, categories = {}, rangeStart = {}, rangeEnd = {}",
-                users, states, categories, rangeStart, rangeEnd);
+        log.info("Поиск событий по параметрам: user_ids = " + users + ", states = " + states + ", categories = " + categories +
+                ", rangeStart = " + rangeStart + ", rangeEnd = " + rangeEnd);
         validateEventStates(states);
-        size = (size == 0) ? 10 : size;
-        int page = from / size;
+        int page = (size > 0) ? from / size : 0;
+        PageRequest pageable = PageRequest.of(page, Math.max(size, 1)); // Минимальный size = 1
 
-        PageRequest pageable = PageRequest.of(page, size);
+        List<Event> events = eventRepository.findEvents(users, states, categories,
+                rangeStart != null ? LocalDateTime.parse(rangeStart, formatter) : null,
+                rangeEnd != null ? LocalDateTime.parse(rangeEnd, formatter) : null,
+                pageable);
 
-        LocalDateTime start = (rangeStart != null) ? LocalDateTime.parse(rangeStart, formatter) : null;
-        LocalDateTime end = (rangeEnd != null) ? LocalDateTime.parse(rangeEnd, formatter) : null;
-
-        List<Event> events = eventRepository.findEvents(users, states, categories, start, end, pageable);
-
-        return events.stream()
+        return events
+                .stream()
                 .map(EventMapper::toEventFullDto)
                 .collect(Collectors.toList());
     }
-
 
     @Override
     public List<EventShortDto> getPublishedEvents(String text, List<Long> categories, Boolean paid, String rangeStart,
