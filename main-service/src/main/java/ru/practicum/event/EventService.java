@@ -21,8 +21,8 @@ public interface EventService {
 
     EventFullDto updateEventByAdmin(Long eventId, UpdateEventAdminRequestDto updateEventAdminRequestDto);
 
-    List<EventFullDto> getEventsByAdmin(List<Long> users, List<String> states, List<Long> categories, String rangeStart,
-                                        String rangeEnd, int from, int size);
+    List<EventFullDto> getEventsByAdmin(List<Long> users, List<String> states, List<Long> categories,
+                                        String rangeStart, String rangeEnd, Integer from, Integer size);
 
     List<EventShortDto> getPublishedEvents(String text, List<Long> categories, Boolean paid, String rangeStart, String rangeEnd,
                                            boolean onlyAvailable, String sort, int from, int size, HttpServletRequest request);

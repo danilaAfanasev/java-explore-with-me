@@ -236,12 +236,12 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public List<EventFullDto> getEventsByAdmin(List<Long> users, List<String> states, List<Long> categories,
-                                               String rangeStart, String rangeEnd, int from, int size) {
-        log.info("Поиск событий: users = {}, states = {}, categories = {}, rangeStart = {}, rangeEnd = {}",
-                users, states, categories, rangeStart, rangeEnd);
+                                               String rangeStart, String rangeEnd, Integer from, Integer size) {
+        log.info("Поиск событий: users = {}, states = {}, categories = {}, rangeStart = {}, rangeEnd = {}, from = {}, size = {}",
+                users, states, categories, rangeStart, rangeEnd, from, size);
 
-        int page = (size > 0) ? from / size : 0;
-        PageRequest pageable = PageRequest.of(page, Math.max(size, 1));
+        int page = ((from == null ? 0 : from) / (size == null ? 10 : size));
+        PageRequest pageable = PageRequest.of(page, (size == null ? 10 : size));
 
         List<Long> userList = (users == null || users.isEmpty()) ? null : users;
         List<String> stateList = (states == null || states.isEmpty()) ? null : states;
@@ -256,6 +256,7 @@ public class EventServiceImpl implements EventService {
         List<Event> events = eventRepository.findEvents(userList, stateList, categoryList, startDate, endDate, pageable);
         return events.stream().map(EventMapper::toEventFullDto).collect(Collectors.toList());
     }
+
 
     @Override
     public List<EventShortDto> getPublishedEvents(String text, List<Long> categories, Boolean paid, String rangeStart,
