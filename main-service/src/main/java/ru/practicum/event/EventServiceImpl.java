@@ -240,7 +240,6 @@ public class EventServiceImpl implements EventService {
         log.info("Поиск событий по параметрам: user_ids = {}, states = {}, categories = {}, rangeStart = {}, rangeEnd = {}",
                 users, states, categories, rangeStart, rangeEnd);
         validateEventStates(states);
-        
         size = (size == 0) ? 10 : size;
         int page = from / size;
 
