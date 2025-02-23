@@ -240,7 +240,6 @@ public class EventServiceImpl implements EventService {
                                                String rangeStart, String rangeEnd, Integer from, Integer size) {
         log.info("Поиск событий: users = {}, states = {}, categories = {}, rangeStart = {}, rangeEnd = {}, from = {}, size = {}",
                 users, states, categories, rangeStart, rangeEnd, from, size);
-        
         int page = ((from == null ? 0 : from) / (size == null ? 10 : size));
         PageRequest pageable = PageRequest.of(page, (size == null ? 10 : size));
 
