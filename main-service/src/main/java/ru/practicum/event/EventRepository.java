@@ -22,9 +22,9 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     Event findFirstByCategoryId(Long catId);
 
     @Query(value = "SELECT * FROM Events e WHERE " +
-            "(:userIds IS NULL OR e.initiator_id IN (:userIds)) " +
-            "AND (:states IS NULL OR e.state IN (:states)) " +
-            "AND (:categories IS NULL OR e.category_id IN (:categories)) " +
+            "(:userIds IS NULL OR (SELECT COUNT(*) FROM UNNEST(:userIds)) = 0 OR e.initiator_id IN (:userIds)) " +
+            "AND (:states IS NULL OR (SELECT COUNT(*) FROM UNNEST(:states)) = 0 OR e.state IN (:states)) " +
+            "AND (:categories IS NULL OR (SELECT COUNT(*) FROM UNNEST(:categories)) = 0 OR e.category_id IN (:categories)) " +
             "AND (:rangeStart IS NULL OR e.event_date >= :rangeStart) " +
             "AND (:rangeEnd IS NULL OR e.event_date < :rangeEnd) " +
             "ORDER BY e.event_date DESC",

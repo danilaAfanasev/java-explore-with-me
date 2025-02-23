@@ -29,6 +29,7 @@ import ru.practicum.user.User;
 import ru.practicum.user.UserRepository;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -239,24 +240,28 @@ public class EventServiceImpl implements EventService {
                                                String rangeStart, String rangeEnd, Integer from, Integer size) {
         log.info("Поиск событий: users = {}, states = {}, categories = {}, rangeStart = {}, rangeEnd = {}, from = {}, size = {}",
                 users, states, categories, rangeStart, rangeEnd, from, size);
-
+        
         int page = ((from == null ? 0 : from) / (size == null ? 10 : size));
         PageRequest pageable = PageRequest.of(page, (size == null ? 10 : size));
 
         List<Long> userList = (users == null || users.isEmpty()) ? null : users;
         List<String> stateList = (states == null || states.isEmpty()) ? null : states;
         List<Long> categoryList = (categories == null || categories.isEmpty()) ? null : categories;
-        LocalDateTime startDate = (rangeStart == null || rangeStart.isEmpty())
-                ? null
-                : LocalDateTime.parse(rangeStart, formatter);
-        LocalDateTime endDate = (rangeEnd == null || rangeEnd.isEmpty())
-                ? null
-                : LocalDateTime.parse(rangeEnd, formatter);
+
+        LocalDateTime startDate = null;
+        LocalDateTime endDate = null;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+        try {
+            startDate = (rangeStart == null || rangeStart.isEmpty()) ? null : LocalDateTime.parse(rangeStart, formatter);
+            endDate = (rangeEnd == null || rangeEnd.isEmpty()) ? null : LocalDateTime.parse(rangeEnd, formatter);
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException("Ошибка формата даты, ожидается 'yyyy-MM-dd HH:mm:ss'");
+        }
 
         List<Event> events = eventRepository.findEvents(userList, stateList, categoryList, startDate, endDate, pageable);
         return events.stream().map(EventMapper::toEventFullDto).collect(Collectors.toList());
     }
-
 
     @Override
     public List<EventShortDto> getPublishedEvents(String text, List<Long> categories, Boolean paid, String rangeStart,
