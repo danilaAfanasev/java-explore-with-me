@@ -241,16 +241,12 @@ public class EventServiceImpl implements EventService {
                 ", rangeStart = " + rangeStart + ", rangeEnd = " + rangeEnd);
         validateEventStates(states);
         int page = (size > 0) ? from / size : 0;
-        PageRequest pageable = PageRequest.of(page, Math.max(size, 1));
+        PageRequest pageable = PageRequest.of(page, Math.max(size, 1)); // Минимальный size = 1
 
-        List<Event> events = eventRepository.findEvents(
-                users != null ? users : Collections.emptyList(),
-                states != null ? states : Collections.emptyList(),
-                categories != null ? categories : Collections.emptyList(),
+        List<Event> events = eventRepository.findEvents(users, states, categories,
                 rangeStart != null ? LocalDateTime.parse(rangeStart, formatter) : null,
                 rangeEnd != null ? LocalDateTime.parse(rangeEnd, formatter) : null,
-                pageable
-        );
+                pageable);
 
         return events
                 .stream()
