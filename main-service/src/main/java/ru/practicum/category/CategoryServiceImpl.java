@@ -2,6 +2,7 @@ package ru.practicum.category;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.practicum.category.dto.CategoryDto;
@@ -12,6 +13,7 @@ import ru.practicum.event.EventRepository;
 import ru.practicum.exceptions.CategoryNotFoundException;
 import ru.practicum.exceptions.ForbiddenException;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.exceptions.ValidationRequestException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -46,6 +48,10 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional
     public CategoryDto createCategory(NewCategoryDto newCategoryDto) {
         log.info("Добавление новой категории: category name = " + newCategoryDto);
+        if (categoryRepository.existsByName(newCategoryDto.getName())) {
+            throw new DataIntegrityViolationException("Категория с таким именем уже существует");
+        }
+
         return toCategoryDto(categoryRepository.save(toCategory(newCategoryDto)));
     }
 
@@ -55,9 +61,14 @@ public class CategoryServiceImpl implements CategoryService {
         log.info("Обновление категории: cat_id = " + catId + ", category name = " + newCategoryDto);
         Category existCategory = categoryRepository.findById(catId)
                 .orElseThrow(() -> new CategoryNotFoundException(catId));
-        Category updatedCategory = toCategory(newCategoryDto);
-        updatedCategory.setId(existCategory.getId());
-        return toCategoryDto(categoryRepository.save(updatedCategory));
+
+        if (!existCategory.getName().equals(newCategoryDto.getName()) &&
+                categoryRepository.existsByName(newCategoryDto.getName())) {
+            throw new DataIntegrityViolationException("Категория с таким именем уже существует");
+        }
+
+        existCategory.setName(newCategoryDto.getName());
+        return toCategoryDto(categoryRepository.save(existCategory));
     }
 
     @Override

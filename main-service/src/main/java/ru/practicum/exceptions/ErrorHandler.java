@@ -2,6 +2,7 @@ package ru.practicum.exceptions;
 
 import jakarta.persistence.EntityNotFoundException;
 import org.hibernate.exception.ConstraintViolationException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -28,17 +29,17 @@ public class ErrorHandler {
 
     private static final String DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
-    @ExceptionHandler
+    @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiError handleValidationException(MethodArgumentNotValidException e) {
-        return new ApiError("BAD_REQUEST", "Incorrectly made request.",
+    public ApiError handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        return new ApiError("BAD_REQUEST", "Некорректно составленный запрос.",
                 e.getMessage(), LocalDateTime.now().format(DateTimeFormatter.ofPattern(DATE_TIME_PATTERN)));
     }
 
-    @ExceptionHandler
+    @ExceptionHandler(ValidationRequestException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiError handleValidationException(ValidationRequestException e) {
-        return new ApiError("BAD_REQUEST", "Incorrectly made request.",
+    public ApiError handleValidationRequestException(ValidationRequestException e) {
+        return new ApiError("BAD_REQUEST", "Ошибка валидации данных.",
                 e.getMessage(), LocalDateTime.now().format(DateTimeFormatter.ofPattern(DATE_TIME_PATTERN)));
     }
 
@@ -49,21 +50,28 @@ public class ErrorHandler {
             RequestNotFoundException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ApiError handleObjectNotFoundException(EntityNotFoundException e) {
-        return new ApiError("NOT_FOUND", "The required object was not found.",
+        return new ApiError("NOT_FOUND", "Запрашиваемый объект не найден.",
                 e.getMessage(), LocalDateTime.now().format(DateTimeFormatter.ofPattern(DATE_TIME_PATTERN)));
     }
 
-    @ExceptionHandler
+    @ExceptionHandler({ConstraintViolationException.class, DataIntegrityViolationException.class})
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ApiError handleValidationException(ConstraintViolationException e) {
-        return new ApiError("CONFLICT", "Integrity constraint has been violated.",
+    public ApiError handleUniqueConstraintViolation(Exception e) {
+        return new ApiError("CONFLICT", "Нарушение уникальности данных (дубликат).",
                 e.getMessage(), LocalDateTime.now().format(DateTimeFormatter.ofPattern(DATE_TIME_PATTERN)));
     }
 
-    @ExceptionHandler
+    @ExceptionHandler(ForbiddenException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ApiError handleForbiddenException(ForbiddenException e) {
-        return new ApiError("FORBIDDEN", "For the requested operation the conditions are not met.",
+    public ApiError handleForbiddenOperationsException(ForbiddenException e) {
+        return new ApiError("CONFLICT", "Запрошенная операция невозможна.",
+                e.getMessage(), LocalDateTime.now().format(DateTimeFormatter.ofPattern(DATE_TIME_PATTERN)));
+    }
+
+    @ExceptionHandler(RequestConflictException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ApiError handleRequestConflictException(RequestConflictException e) {
+        return new ApiError("CONFLICT", "Конфликт запроса на участие.",
                 e.getMessage(), LocalDateTime.now().format(DateTimeFormatter.ofPattern(DATE_TIME_PATTERN)));
     }
 }
