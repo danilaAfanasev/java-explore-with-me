@@ -13,7 +13,6 @@ import ru.practicum.event.EventRepository;
 import ru.practicum.exceptions.CategoryNotFoundException;
 import ru.practicum.exceptions.ForbiddenException;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.exceptions.ValidationRequestException;
 
 import java.util.List;
 import java.util.stream.Collectors;
