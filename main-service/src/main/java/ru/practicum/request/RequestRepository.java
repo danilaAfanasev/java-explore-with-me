@@ -21,7 +21,7 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
 
     @Modifying
     @Query("update Request r set r.status = :newStatus where (r.event = :event and r.status = :searchStatus)")
-    void updateRequestStatusByEventIdAndStatus(@Param(value = "event") Event event,
+    void updateRequestStatusByEventIdAndStatus(Event event,
                                                @Param(value = "searchStatus") RequestStatus searchStatus,
                                                @Param(value = "newStatus") RequestStatus newStatus);
 }

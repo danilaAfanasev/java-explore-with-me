@@ -6,4 +6,8 @@ public class EventNotFoundException extends EntityNotFoundException {
     public EventNotFoundException(long id) {
         super(String.format("Событие с id=%d не было найдено", id));
     }
+
+    public EventNotFoundException(String message) {
+        super(message);
+    }
 }
