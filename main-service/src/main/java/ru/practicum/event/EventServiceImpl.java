@@ -240,16 +240,20 @@ public class EventServiceImpl implements EventService {
         log.info("Поиск событий по параметрам: user_ids = " + users + ", states = " + states + ", categories = " + categories +
                 ", rangeStart = " + rangeStart + ", rangeEnd = " + rangeEnd);
         validateEventStates(states);
-        int page = (size > 0) ? from / size : 0;
-        PageRequest pageable = PageRequest.of(page, Math.max(size, 1)); // Минимальный size = 1
 
-        List<Event> events = eventRepository.findEvents(users, states, categories,
-                rangeStart != null ? LocalDateTime.parse(rangeStart, formatter) : null,
-                rangeEnd != null ? LocalDateTime.parse(rangeEnd, formatter) : null,
-                pageable);
+        users = (users == null || users.isEmpty()) ? List.of(-1L) : users;
+        states = (states == null) ? List.of() : states;
+        categories = (categories == null || categories.isEmpty()) ? List.of(-1L) : categories;
+        LocalDateTime startDate = (rangeStart != null) ? LocalDateTime.parse(rangeStart, formatter) : LocalDateTime.of(2000, 1, 1, 0, 0);
+        LocalDateTime endDate = (rangeEnd != null) ? LocalDateTime.parse(rangeEnd, formatter) : LocalDateTime.of(2099, 1, 1, 0, 0);
 
-        return events
-                .stream()
+        int page = 0;
+        int pageSize = 1000;
+        PageRequest pageable = PageRequest.of(page, pageSize);
+
+        List<Event> events = eventRepository.findEvents(users, states, categories, startDate, endDate, pageable);
+
+        return events.stream()
                 .map(EventMapper::toEventFullDto)
                 .collect(Collectors.toList());
     }
