@@ -241,18 +241,23 @@ public class EventServiceImpl implements EventService {
                 ", rangeStart = " + rangeStart + ", rangeEnd = " + rangeEnd);
         validateEventStates(states);
 
-        users = (users == null || users.isEmpty()) ? List.of(-1L) : users;
+        users = (users == null || users.isEmpty()) ? List.of() : users;
         states = (states == null) ? List.of() : states;
-        categories = (categories == null || categories.isEmpty()) ? List.of(-1L) : categories;
+        categories = (categories == null || categories.isEmpty()) ? List.of() : categories;
         LocalDateTime startDate = (rangeStart != null) ? LocalDateTime.parse(rangeStart, formatter) : LocalDateTime.of(2000, 1, 1, 0, 0);
         LocalDateTime endDate = (rangeEnd != null) ? LocalDateTime.parse(rangeEnd, formatter) : LocalDateTime.of(2099, 1, 1, 0, 0);
 
         int page = 0;
-        int pageSize = 1000;
+        int pageSize = 10;
         PageRequest pageable = PageRequest.of(page, pageSize);
 
-        List<Event> events = eventRepository.findEvents(users, states, categories, startDate, endDate, pageable);
-
+        List<Event> events;
+        if (users.isEmpty()) {
+            events = eventRepository.findAll(pageable).toList();
+        } else {
+            events = eventRepository.findEvents(users, states, categories, startDate, endDate, pageable);
+        }
+        
         return events.stream()
                 .map(EventMapper::toEventFullDto)
                 .collect(Collectors.toList());
