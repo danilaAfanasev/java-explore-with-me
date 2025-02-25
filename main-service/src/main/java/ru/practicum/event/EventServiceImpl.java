@@ -257,7 +257,6 @@ public class EventServiceImpl implements EventService {
         } else {
             events = eventRepository.findEvents(users, states, categories, startDate, endDate, pageable);
         }
-        
         return events.stream()
                 .map(EventMapper::toEventFullDto)
                 .collect(Collectors.toList());
