@@ -240,13 +240,24 @@ public class EventServiceImpl implements EventService {
         log.info("Поиск событий по параметрам: user_ids = " + users + ", states = " + states + ", categories = " + categories +
                 ", rangeStart = " + rangeStart + ", rangeEnd = " + rangeEnd);
         validateEventStates(states);
-        List<Event> events = eventRepository.findEvents(users,
-                states, categories,
-                rangeStart != null ? LocalDateTime.parse(rangeStart, formatter) : null,
-                rangeEnd != null ? LocalDateTime.parse(rangeEnd, formatter) : null,
-                PageRequest.of(from / size, size));
-        return events
-                .stream()
+
+        users = (users == null || users.isEmpty()) ? List.of() : users;
+        states = (states == null) ? List.of() : states;
+        categories = (categories == null || categories.isEmpty()) ? List.of() : categories;
+        LocalDateTime startDate = (rangeStart != null) ? LocalDateTime.parse(rangeStart, formatter) : LocalDateTime.of(2000, 1, 1, 0, 0);
+        LocalDateTime endDate = (rangeEnd != null) ? LocalDateTime.parse(rangeEnd, formatter) : LocalDateTime.of(2099, 1, 1, 0, 0);
+
+        int page = 0;
+        int pageSize = 10;
+        PageRequest pageable = PageRequest.of(page, pageSize);
+
+        List<Event> events;
+        if (users.isEmpty()) {
+            events = eventRepository.findAll(pageable).toList();
+        } else {
+            events = eventRepository.findEvents(users, states, categories, startDate, endDate, pageable);
+        }
+        return events.stream()
                 .map(EventMapper::toEventFullDto)
                 .collect(Collectors.toList());
     }
@@ -302,30 +313,43 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    @Transactional
     public EventFullDto getPublishedEventById(Long eventId, HttpServletRequest request) {
-        log.info("Получение об опубликованном событии с ID: event_id = " + eventId);
+        log.info("Получение опубликованного события с ID: {}", eventId);
 
         Event event = eventRepository.findByIdAndState(eventId, EventState.PUBLISHED)
                 .orElseThrow(() -> new EventNotFoundException(eventId));
 
-        log.info("Found event: " + event);
+        log.info("Событие найдено: {}", event);
+
+        String clientIp = request.getRemoteAddr();
+        log.info("IP клиента: {}", clientIp);
+
+        // Проверяем, увеличивался ли views в этом запросе
+        if (request.getSession().getAttribute("viewed_" + eventId) == null) {
+            log.info("Вызываем incrementViews() для события ID: {}", eventId);
+            eventRepository.incrementViews(eventId);
+
+            // Обновляем объект event из БД, чтобы получить новое значение views
+            event = eventRepository.findById(eventId).orElseThrow();
+            log.info("Обновлен views для события {}: {}", event.getId(), event.getViews());
+
+            // Помечаем, что для этого события уже было увеличение просмотров
+            request.getSession().setAttribute("viewed_" + eventId, true);
+        } else {
+            log.info("Просмотр уже засчитан в этом сеансе, повторное увеличение отменено.");
+        }
 
         try {
-            Integer countHits = getCountHits(request);
+            log.info("Вызываем StatClient.addHit() для события ID: {}", eventId);
             statClient.addHit(HitDto.builder()
                     .app("ewm-main-service")
                     .uri(request.getRequestURI())
-                    .ip(request.getRemoteAddr())
+                    .ip(clientIp)
                     .timestamp(LocalDateTime.now().format(formatter))
                     .build());
-            Integer newCountHits = getCountHits(request);
-            if (newCountHits != null && newCountHits > countHits) {
-                event.setViews(event.getViews() + 1);
-                eventRepository.save(event);
-            }
         } catch (Exception e) {
-            log.error("Ошибка при обновлении представлений событий или взаимодействии с statClient", e);
-            throw new RuntimeException("Internal server error", e);
+            log.warn("StatClient недоступен, но продолжаем выполнение. Ошибка: {}", e.getMessage());
         }
 
         return toEventFullDto(event);

@@ -1,7 +1,9 @@
 package ru.practicum.event;
 
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -19,11 +21,11 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 
     Event findFirstByCategoryId(Long catId);
 
-    @Query(value = "SELECT * FROM Events e WHERE (:userId is null or e.initiator_id IN (cast(cast(:userId AS TEXT) AS BIGINT))) "
-            + "and (:states is null or e.state IN (cast(:states AS text))) "
-            + "and (:categories is null or e.category_id IN (cast(cast(:categories AS TEXT) AS BIGINT))) "
-            + "and (cast(:rangeStart AS timestamp) is null or e.event_date >= cast(:rangeStart AS timestamp))"
-            + "and (cast(:rangeEnd AS timestamp) is null or e.event_date < cast(:rangeEnd AS timestamp))",
+    @Query(value = "SELECT * FROM Events e WHERE e.initiator_id IN (:userId) "
+            + "AND e.state IN (:states) "
+            + "AND e.category_id IN (:categories) "
+            + "AND e.event_date >= :rangeStart "
+            + "AND e.event_date < :rangeEnd",
             nativeQuery = true)
     List<Event> findEvents(@Param("userId") List<Long> userId,
                            @Param("states") List<String> states,
@@ -40,12 +42,16 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             + "and (e.event_date >= :rangeStart) "
             + "and (cast(:rangeEnd AS timestamp) is null or e.event_date < cast(:rangeEnd AS timestamp))",
             nativeQuery = true)
-    List<Event> findPublishedEvents(@Param("text") String text,
-                                    @Param("categories") List<Long> categories,
-                                    @Param("paid") Boolean paid,
+
+    List<Event> findPublishedEvents(String text, List<Long> categories, Boolean paid,
                                     @Param("rangeStart") LocalDateTime rangeStart,
-                                    @Param("rangeEnd") LocalDateTime rangeEnd,
-                                    Pageable pageable);
+                                    @Param("rangeEnd") LocalDateTime rangeEnd, Pageable pageable);
 
     Optional<Event> findByIdAndState(Long eventId, EventState state);
+
+    @Transactional
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE Event e SET e.views = e.views + 1 WHERE e.id = :eventId")
+    void incrementViews(@Param("eventId") Long eventId);
+
 }

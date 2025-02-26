@@ -57,7 +57,7 @@ public class RequestServiceImpl implements RequestService {
             throw new ForbiddenException("Достигнут лимит участников.");
         }
         RequestStatus status = RequestStatus.PENDING;
-        if (!event.isRequestModeration() || event.getParticipantLimit() == 0) {
+        if (event.getParticipantLimit() == 0 || !event.isRequestModeration()) {
             status = RequestStatus.CONFIRMED;
         }
         Request newParticipationRequest = Request.builder()
